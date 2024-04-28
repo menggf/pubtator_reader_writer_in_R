@@ -3,7 +3,7 @@ library(data.table)
 ### read pubtator file and return a list
 
 read_pubtator<-function(input.file){
-  input=as.vector(as.matrix(fread(input.file, sep="\n", header=FALSE)))
+  input=as.vector(as.matrix(fread(input.file, sep="\n", header=FALSE, encoding="UTF-8")))
   output.list=list()
   cc=1
   while(1){
@@ -29,6 +29,7 @@ read_pubtator<-function(input.file){
           return(c(y,NA))
         return(y)
       })))
+      row.names(res)<-paste0("R",1:nrow(res))
       tmp[["item"]]=res
       output.list[[id]]=tmp
     }else{
@@ -80,6 +81,22 @@ remove_empty_pubtator<-function(input.list, remove.empty.col6=TRUE){
     item=subset(item, !is.na(V6))
     if(nrow(item)==0)
       return(NULL)
+    input[["item"]]=item
+    return(input)
+  })
+  o=o[!sapply(o, is.null)]
+  o
+}
+
+remove_nogene_pubtator<-function(input.list){
+  o=lapply(input.list, function(input){
+    if(is.null(input[["item"]]))
+      return(NULL)
+   
+    item=input[["item"]]
+    n.gene=nrow(subset(item, V5=="Gene"))
+    if( n.gene==0)
+		return(NULL)   
     input[["item"]]=item
     return(input)
   })
